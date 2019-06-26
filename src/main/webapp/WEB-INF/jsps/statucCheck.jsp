@@ -7,6 +7,8 @@
 <title>Insert title here</title>
 </head>
 <body>
-	${msg}
+	Transaction Id : ${paymentStatus.transactionId}
+	Available Balance : ${paymentStatus.availableBalance}
+	Status of transaction : ${paymentStatus.status}
 </body>
 </html>

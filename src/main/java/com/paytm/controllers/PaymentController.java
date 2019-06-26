@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 import com.paytm.models.CardInfo;
+import com.paytm.models.PaymentStatus;
 
 @Controller
 public class PaymentController {
@@ -44,8 +45,12 @@ public class PaymentController {
 		System.out.println("Requested payload is : " + cardInfoJsonData);
 		ResponseEntity<String> result = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 
-		System.out.println(result.getBody());
-		model.addAttribute("msg", result.getBody());
+		String res = result.getBody();
+		System.out.println("Response information : " + res);
+		
+		PaymentStatus paymentStatus = gson.fromJson(res, PaymentStatus.class);
+		
+		model.addAttribute("paymentStatus", paymentStatus);
 		return "statucCheck";
 	}
 }
