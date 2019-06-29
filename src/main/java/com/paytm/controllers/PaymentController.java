@@ -8,11 +8,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 import com.paytm.models.CardInfo;
 import com.paytm.models.PaymentStatus;
+import com.paytm.models.ReponseException;
 
 @Controller
 public class PaymentController {
@@ -30,7 +32,7 @@ public class PaymentController {
 		System.out.println(cardInfo.getHolderName());
 		//send this card info to bank they validate and update you status of payment.
 		Gson gson = new Gson();
-		String url = "http://192.168.0.2:8080/robobank/robo/v1/processPayment";
+		String url = "http://192.168.0.19:8080/robobank/robo/v1/processPayment";
 		
 		RestTemplate restTemplate = new RestTemplate();
 
@@ -40,17 +42,25 @@ public class PaymentController {
 		String cardInfoJsonData = gson.toJson(cardInfo);
 		
 		HttpEntity<String> entity = new HttpEntity<String>(cardInfoJsonData, headers);
-
-		System.out.println("URL formed is : " + url);
-		System.out.println("Requested payload is : " + cardInfoJsonData);
-		ResponseEntity<String> result = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
-		String res = result.getBody();
-		System.out.println("Response information : " + res);
+		ResponseEntity<String> result = null;
 		
-		PaymentStatus paymentStatus = gson.fromJson(res, PaymentStatus.class);
+		try {
+			result = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);			
+			System.out.println("Response information : " + result.getBody());
+			PaymentStatus status = gson.fromJson(result.getBody(), PaymentStatus.class);
+			System.out.println(status.getAvailableBalance());
+			model.addAttribute("paymentStatus", status);
+			return "statucCheck";
+		} catch(HttpServerErrorException httpException) {
+			String resExceptionBody = httpException.getResponseBodyAsString();
+			System.out.println("Response information : " + resExceptionBody);
+			ReponseException exp = gson.fromJson(resExceptionBody, ReponseException.class);
+			System.out.println(exp.getErrorCode() + exp.getErrorMessage());
+			model.addAttribute("exception", exp);
+			return "payment";
+		}
+
 		
-		model.addAttribute("paymentStatus", paymentStatus);
-		return "statucCheck";
+		
 	}
 }

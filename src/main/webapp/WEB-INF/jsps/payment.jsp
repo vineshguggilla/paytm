@@ -7,6 +7,7 @@
 <title>Insert title here</title>
 </head>
 <body>
+<font color="red">${exception.errorMessage}</font>
 <form action="doPayment">
 Card Number : <input type="text" name="cardNumber"/></br>
 Card Holder Name : <input type="text" name="holderName"/> </br>
